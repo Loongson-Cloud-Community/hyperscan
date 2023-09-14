@@ -87,4 +87,11 @@
 #define NO_ASM
 #endif
 
+/*
+ * LOONGARCH64 uses a different form of inline asm
+ */
+#if defined(__loongarch64)
+#define NO_ASM
+#endif
+
 #endif // UTIL_ARCH_H_

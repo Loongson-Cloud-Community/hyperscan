@@ -45,6 +45,10 @@
 # endif
 #endif
 
+#if defined(HAVE_C_LSXINTRIN_H)
+#  define USE_LSXINTRIN_H
+#endif
+
 #ifdef __cplusplus
 # if defined(HAVE_CXX_INTRIN_H)
 #  define USE_INTRIN_H
@@ -59,6 +63,8 @@
 #include <x86intrin.h>
 #elif defined(USE_INTRIN_H)
 #include <intrin.h>
+#elif defined(USE_LSXINTRIN_H)
+#include <lsxintrin.h>
 #else
 #error no intrinsics file
 #endif

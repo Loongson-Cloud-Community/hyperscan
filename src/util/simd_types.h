@@ -33,8 +33,11 @@
 #include "util/arch.h"
 #include "util/intrinsics.h"
 #include "ue2common.h"
+#include <lsxintrin.h>
 
 #if defined(HAVE_SSE2)
+typedef __m128i m128;
+#elif defined(ARCH_LOONGARCH64)
 typedef __m128i m128;
 #else
 typedef struct ALIGN_DIRECTIVE {u64a hi; u64a lo;} m128;

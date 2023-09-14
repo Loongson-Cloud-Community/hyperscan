@@ -150,7 +150,7 @@ m128 loadcompressed128_32bit(const void *ptr, m128 mvec) {
     u32 x[4] = { expand32(v[0], m[0]), expand32(v[1], m[1]),
                  expand32(v[2], m[2]), expand32(v[3], m[3]) };
 
-    return _mm_set_epi32(x[3], x[2], x[1], x[0]);
+    return __lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(_lsx_vreplgr2vr_w(x[3]),x[2],2),x[1],1),x[0],0);
 }
 #endif
 
@@ -158,7 +158,7 @@ m128 loadcompressed128_32bit(const void *ptr, m128 mvec) {
 static really_inline
 m128 loadcompressed128_64bit(const void *ptr, m128 mvec) {
     // First, decompose our vectors into 64-bit chunks.
-    u64a m[2] = { movq(mvec), movq(_mm_srli_si128(mvec, 8)) };
+    u64a m[2] = { movq(mvec), movq(__lsx_vsrli_h(mvec, 8)) };
 
     u32 bits[2] = { popcount64(m[0]), popcount64(m[1]) };
     u64a v[2];
@@ -167,7 +167,7 @@ m128 loadcompressed128_64bit(const void *ptr, m128 mvec) {
 
     u64a x[2] = { expand64(v[0], m[0]), expand64(v[1], m[1]) };
 
-    return _mm_set_epi64x(x[1], x[0]);
+    return __lsx_vinsgr2vr_d(__lsx_vreplgr2vr_d(x[1]),x[0],0);
 }
 #endif
 
@@ -264,8 +264,8 @@ m256 loadcompressed256_32bit(const void *ptr, m256 mvec) {
                  expand32(v[6], m[6]), expand32(v[7], m[7]) };
 
 #if !defined(HAVE_AVX2)
-    m256 xvec = { .lo = _mm_set_epi32(x[3], x[2], x[1], x[0]),
-                  .hi = _mm_set_epi32(x[7], x[6], x[5], x[4]) };
+    m256 xvec = { .lo = __lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(_lsx_vreplgr2vr_w(x[3]),x[2],2),x[1],1),x[0],0),
+                  .hi = __lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(_lsx_vreplgr2vr_w(x[7]),x[6],2),x[5],1),x[4],0) };
 #else
     m256 xvec = _mm256_set_epi32(x[7], x[6], x[5], x[4],
                                  x[3], x[2], x[1], x[0]);
@@ -291,8 +291,8 @@ m256 loadcompressed256_64bit(const void *ptr, m256 mvec) {
                   expand64(v[2], m[2]), expand64(v[3], m[3]) };
 
 #if !defined(HAVE_AVX2)
-    m256 xvec = { .lo = _mm_set_epi64x(x[1], x[0]),
-                  .hi = _mm_set_epi64x(x[3], x[2]) };
+    m256 xvec = { .lo = __lsx_vinsgr2vr_d(__lsx_vreplgr2vr_d(x[1]),x[0],0),
+                  .hi = __lsx_vinsgr2vr_d(__lsx_vreplgr2vr_d(x[3]),x[2],0) };
 #else
     m256 xvec = _mm256_set_epi64x(x[3], x[2], x[1], x[0]);
 #endif
@@ -402,9 +402,9 @@ m384 loadcompressed384_32bit(const void *ptr, m384 mvec) {
                   expand32(v[8], m[8]), expand32(v[9], m[9]),
                   expand32(v[10], m[10]), expand32(v[11], m[11]) };
 
-    m384 xvec = { .lo = _mm_set_epi32(x[3], x[2], x[1], x[0]),
-                  .mid = _mm_set_epi32(x[7], x[6], x[5], x[4]),
-                  .hi = _mm_set_epi32(x[11], x[10], x[9], x[8]) };
+    m384 xvec = { .lo = __lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(_lsx_vreplgr2vr_w(x[3]),x[2],2),x[1],1),x[0],0),
+                  .mid = __lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(_lsx_vreplgr2vr_w(x[7]),x[6],2),x[5],1),x[4],0),
+                  .hi = __lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(_lsx_vreplgr2vr_w(x[11]),x[10],2),x[9],1),x[8],0) };
     return xvec;
 }
 #endif
@@ -427,9 +427,9 @@ m384 loadcompressed384_64bit(const void *ptr, m384 mvec) {
                   expand64(v[2], m[2]), expand64(v[3], m[3]),
                   expand64(v[4], m[4]), expand64(v[5], m[5]) };
 
-    m384 xvec = { .lo = _mm_set_epi64x(x[1], x[0]),
-                  .mid = _mm_set_epi64x(x[3], x[2]),
-                  .hi = _mm_set_epi64x(x[5], x[4]) };
+    m384 xvec = { .lo = __lsx_vinsgr2vr_d(__lsx_vreplgr2vr_d(x[1]),x[0],0),
+                  .mid = __lsx_vinsgr2vr_d(__lsx_vreplgr2vr_d(x[3]),x[2],0),
+                  .hi = __lsx_vinsgr2vr_d(__lsx_vreplgr2vr_d(x[5]),x[4],0) };
     return xvec;
 }
 #endif
@@ -558,10 +558,10 @@ m512 loadcompressed512_32bit(const void *ptr, m512 mvec) {
     xvec.hi = _mm256_set_epi32(x[15], x[14], x[13], x[12],
                                x[11], x[10], x[9], x[8]);
 #else
-    xvec.lo.lo = _mm_set_epi32(x[3], x[2], x[1], x[0]);
-    xvec.lo.hi = _mm_set_epi32(x[7], x[6], x[5], x[4]);
-    xvec.hi.lo = _mm_set_epi32(x[11], x[10], x[9], x[8]);
-    xvec.hi.hi = _mm_set_epi32(x[15], x[14], x[13], x[12]);
+    xvec.lo.lo = __lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(_lsx_vreplgr2vr_w(x[3]),x[2],2),x[1],1),x[0],0);
+    xvec.lo.hi = __lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(_lsx_vreplgr2vr_w(x[7]),x[6],2),x[5],1),x[4],0);
+    xvec.hi.lo = __lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(_lsx_vreplgr2vr_w(x[11]),x[10],2),x[9],1),x[8],0);
+    xvec.hi.hi = __lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(__lsx_vinsgr2vr_w(_lsx_vreplgr2vr_w(x[15]),x[14],2),x[13],1),x[12],0);
 #endif
     return xvec;
 }
@@ -594,10 +594,10 @@ m512 loadcompressed512_64bit(const void *ptr, m512 mvec) {
     m512 xvec = { .lo = _mm256_set_epi64x(x[3], x[2], x[1], x[0]),
                   .hi = _mm256_set_epi64x(x[7], x[6], x[5], x[4])};
 #else
-    m512 xvec = { .lo = { _mm_set_epi64x(x[1], x[0]),
-                          _mm_set_epi64x(x[3], x[2]) },
-                  .hi = { _mm_set_epi64x(x[5], x[4]),
-                          _mm_set_epi64x(x[7], x[6]) } };
+    m512 xvec = { .lo = { __lsx_vinsgr2vr_d(__lsx_vreplgr2vr_d(x[1]),x[0],0),
+                          __lsx_vinsgr2vr_d(__lsx_vreplgr2vr_d(x[3]),x[2],0) },
+                  .hi = { __lsx_vinsgr2vr_d(__lsx_vreplgr2vr_d(x[5]),x[4],0),
+                          __lsx_vinsgr2vr_d(__lsx_vreplgr2vr_d(x[7]),x[6],0) } };
 #endif
     return xvec;
 }
